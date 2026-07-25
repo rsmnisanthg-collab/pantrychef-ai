@@ -1,40 +1,69 @@
 import os
 from dotenv import load_dotenv
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from groq import Groq
 
+
+# =========================================================
+# LOAD ENVIRONMENT VARIABLES
+# =========================================================
+
 load_dotenv()
 
-app = FastAPI(title="PantryChef AI")
+api_key = os.getenv("GROQ_API_KEY")
 
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Groq API Key
-api_key = os.environ.get("GROQ_API_KEY")
-
-if not api_key:
-    print("WARNING: GROQ_API_KEY is not set!")
-else:
-    print("Groq API key loaded successfully.")
-
-# Groq Client
-client = Groq(api_key=api_key)
-
-# Groq Model
-MODEL = os.environ.get(
+MODEL = os.getenv(
     "GROQ_MODEL",
     "llama-3.3-70b-versatile"
 )
 
+
+# =========================================================
+# FASTAPI APP
+# =========================================================
+
+app = FastAPI(title="PantryChef AI")
+
+
+# =========================================================
+# CORS
+# =========================================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# =========================================================
+# GROQ CLIENT
+# =========================================================
+
+client = None
+
+if api_key:
+    print("Groq API key loaded successfully.")
+
+    client = Groq(
+        api_key=api_key,
+        timeout=60.0,
+        max_retries=2
+    )
+
+else:
+    print("WARNING: GROQ_API_KEY is not set!")
+
+
+# =========================================================
+# SYSTEM PROMPT
+# =========================================================
 
 SYSTEM_PROMPT = """
 You are PantryChef, a friendly and practical cooking assistant.
@@ -48,6 +77,7 @@ For each recipe provide:
 2. A one-line description
 3. Ingredients used
 4. Numbered cooking steps
+5. Approximate cooking time
 
 Use the ingredients provided by the user.
 
@@ -67,6 +97,10 @@ Format the response in clean Markdown.
 """
 
 
+# =========================================================
+# REQUEST MODEL
+# =========================================================
+
 class RecipeRequest(BaseModel):
     ingredients: str
     diet: str = "none"
@@ -74,10 +108,44 @@ class RecipeRequest(BaseModel):
     history: str = ""
 
 
-# TEMPORARY GROQ CONNECTION TEST
+# =========================================================
+# HOME
+# =========================================================
+
+@app.get("/api")
+async def api_home():
+    return {
+        "message": "PantryChef AI API is running",
+        "model": MODEL
+    }
+
+
+# =========================================================
+# HEALTH CHECK
+# =========================================================
+
 @app.get("/health")
 async def health():
+
+    if not api_key:
+        return {
+            "status": "error",
+            "groq": "not configured",
+            "api_key_loaded": False,
+            "model": MODEL,
+            "message": "GROQ_API_KEY is not configured."
+        }
+
+    if client is None:
+        return {
+            "status": "error",
+            "groq": "client not created",
+            "api_key_loaded": True,
+            "model": MODEL
+        }
+
     try:
+
         print("Testing Groq API connection...")
 
         test = client.chat.completions.create(
@@ -88,44 +156,68 @@ async def health():
                     "content": "Reply with only the word OK."
                 }
             ],
+            temperature=0,
             max_tokens=10
         )
+
+        response_text = test.choices[0].message.content
 
         print("Groq connection successful!")
 
         return {
             "status": "ok",
             "groq": "connected",
-            "api_key_loaded": bool(api_key),
+            "api_key_loaded": True,
             "model": MODEL,
-            "response": test.choices[0].message.content
+            "response": response_text
         }
 
     except Exception as e:
+
         print("GROQ HEALTH CHECK ERROR:", repr(e))
 
         return {
             "status": "error",
             "groq": "not connected",
-            "api_key_loaded": bool(api_key),
+            "api_key_loaded": True,
             "model": MODEL,
-            "error": repr(e)
+            "error_type": type(e).__name__,
+            "error": str(e)
         }
 
+
+# =========================================================
+# GENERATE RECIPE
+# =========================================================
 
 @app.post("/api/generate")
 async def generate_recipe(request: RecipeRequest):
 
+    print("====================================")
     print("API REQUEST RECEIVED")
     print("Ingredients:", request.ingredients)
     print("Diet:", request.diet)
+    print("====================================")
 
+    # Check ingredients
     if not request.ingredients.strip():
+
         return {
             "success": False,
             "recipe": "Please enter at least one ingredient."
         }
 
+
+    # Check API key
+    if not api_key or client is None:
+
+        return {
+            "success": False,
+            "recipe": "Groq API key is not configured on the server."
+        }
+
+
+    # Create prompt
     user_prompt = f"""
 Ingredients available:
 {request.ingredients}
@@ -142,12 +234,16 @@ Follow-up request:
 Create 2-3 realistic recipes using the available ingredients.
 """
 
+
     try:
 
         print("Calling GroqCloud API...")
+        print("Using model:", MODEL)
 
         completion = client.chat.completions.create(
+
             model=MODEL,
+
             messages=[
                 {
                     "role": "system",
@@ -158,11 +254,15 @@ Create 2-3 realistic recipes using the available ingredients.
                     "content": user_prompt
                 }
             ],
+
             temperature=0.7,
+
             max_tokens=1500
         )
 
+
         recipe = completion.choices[0].message.content
+
 
         print("Recipe generated successfully.")
 
@@ -171,19 +271,33 @@ Create 2-3 realistic recipes using the available ingredients.
             "recipe": recipe
         }
 
+
     except Exception as e:
 
-        print("GROQ API ERROR:", repr(e))
+        print("====================================")
+        print("GROQ API ERROR")
+        print("ERROR TYPE:", type(e).__name__)
+        print("ERROR:", repr(e))
+        print("====================================")
+
 
         return {
             "success": False,
-            "recipe": f"Error generating recipe: {str(e)}"
+            "recipe": "Unable to connect to Groq AI right now.",
+            "error_type": type(e).__name__,
+            "error": str(e)
         }
 
 
-# Serve frontend
+# =========================================================
+# SERVE FRONTEND
+# =========================================================
+
 app.mount(
     "/",
-    StaticFiles(directory=".", html=True),
+    StaticFiles(
+        directory=".",
+        html=True
+    ),
     name="static"
 )
