@@ -26,6 +26,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   background: var(--board);
@@ -120,6 +124,7 @@ label {
   font-size: 1rem;
   line-height: 1;
   opacity: 0.7;
+  padding: 0;
 }
 
 .tag button:hover {
@@ -178,6 +183,8 @@ select {
   font-size: 1.15rem;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .cta:hover {
@@ -255,6 +262,7 @@ select {
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .cta2:disabled {
@@ -304,6 +312,14 @@ select {
     width: 100%;
   }
 
+  .cta {
+    min-height: 54px;
+  }
+
+  #ingredientText {
+    min-width: 120px;
+  }
+
 }
 
 </style>
@@ -342,6 +358,8 @@ select {
     <input
       id="ingredientText"
       type="text"
+      autocomplete="off"
+      autocapitalize="words"
       placeholder="type an ingredient and hit Enter — e.g. eggs, spinach, rice"
     >
 
@@ -392,6 +410,7 @@ select {
   <button
     class="cta"
     id="generateBtn"
+    type="button"
   >
     Find me something to cook
   </button>
@@ -418,12 +437,14 @@ select {
     <input
       id="followupInput"
       type="text"
+      autocomplete="off"
       placeholder="tweak it — e.g. 'make it spicier' or 'swap the eggs'"
     >
 
     <button
       class="cta2"
       id="followupBtn"
+      type="button"
     >
       Ask
     </button>
@@ -451,9 +472,6 @@ const dietSelect =
 
 const output =
   document.getElementById('output');
-
-const emptyState =
-  document.getElementById('emptyState');
 
 const followupRow =
   document.getElementById('followupRow');
@@ -492,6 +510,7 @@ function renderTags() {
       <button
         type="button"
         data-index="${index}"
+        aria-label="Remove ${escapeHtml(tag)}"
       >
         ×
       </button>
@@ -544,6 +563,10 @@ tagInput.addEventListener(
 
       renderTags();
 
+      setTimeout(() => {
+        ingredientText.focus();
+      }, 50);
+
     } else {
 
       ingredientText.focus();
@@ -569,13 +592,23 @@ ingredientText.addEventListener(
 
       event.preventDefault();
 
-      tags.push(
-        ingredientText.value.trim()
-      );
+      const ingredient =
+        ingredientText.value.trim();
+
+      tags.push(ingredient);
 
       ingredientText.value = "";
 
       renderTags();
+
+      /*
+        Keep the input ready for the next ingredient.
+        On mobile, the user can continue typing.
+      */
+
+      setTimeout(() => {
+        ingredientText.focus();
+      }, 50);
 
     }
 
@@ -588,6 +621,10 @@ ingredientText.addEventListener(
       tags.pop();
 
       renderTags();
+
+      setTimeout(() => {
+        ingredientText.focus();
+      }, 50);
 
     }
 
@@ -662,9 +699,7 @@ function simpleMarkdownToHtml(markdown) {
    CALL BACKEND API
 ------------------------------ */
 
-async function generateRecipe(
-  payload
-) {
+async function generateRecipe(payload) {
 
   const response =
     await fetch(
@@ -715,14 +750,44 @@ async function generateRecipe(
    GENERATE BUTTON
 ------------------------------ */
 
-async function handleGenerate() {
+async function handleGenerate(event) {
+
+  /*
+    IMPORTANT FOR MOBILE:
+
+    Remove focus from the ingredient input
+    before starting the API request.
+
+    This prevents the mobile browser from
+    automatically scrolling back to the
+    ingredient input.
+  */
+
+  if (event) {
+    event.preventDefault();
+  }
+
+  ingredientText.blur();
+
+  generateBtn.blur();
+
+  /*
+    Check ingredients.
+  */
 
   if (!tags.length) {
 
     ingredientText.placeholder =
       "Add at least one ingredient first";
 
-    ingredientText.focus();
+    /*
+      Only focus the ingredient input
+      when there are no ingredients.
+    */
+
+    setTimeout(() => {
+      ingredientText.focus();
+    }, 100);
 
     return;
 
@@ -744,6 +809,22 @@ async function handleGenerate() {
       🍳 PantryChef is cooking up some ideas...
     </div>
   `;
+
+
+  /*
+    Scroll to the result area.
+
+    This is especially useful on mobile.
+  */
+
+  setTimeout(() => {
+
+    output.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  }, 100);
 
 
   const payload = {
@@ -785,6 +866,20 @@ Assistant: ${recipe}`;
       "flex";
 
 
+    /*
+      Keep the result visible on mobile.
+    */
+
+    setTimeout(() => {
+
+      output.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+    }, 100);
+
+
   }
 
   catch (error) {
@@ -807,12 +902,21 @@ Assistant: ${recipe}`;
         </p>
 
         <p>
-          Please check your API key and
-          try again.
+          Please try again.
         </p>
 
       </div>
     `;
+
+
+    setTimeout(() => {
+
+      output.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+    }, 100);
 
   }
 
@@ -856,6 +960,12 @@ async function handleFollowup() {
 
 
   if (!card) {
+
+    followupBtn.disabled =
+      false;
+
+    followupBtn.textContent =
+      "Ask";
 
     return;
 
@@ -909,6 +1019,16 @@ Assistant: ${answer}`;
 
     followupInput.value = "";
 
+
+    setTimeout(() => {
+
+      card.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+    }, 100);
+
   }
 
   catch (error) {
@@ -952,6 +1072,8 @@ followupInput.addEventListener(
   function(event) {
 
     if (event.key === 'Enter') {
+
+      event.preventDefault();
 
       handleFollowup();
 
