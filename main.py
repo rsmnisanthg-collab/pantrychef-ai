@@ -74,13 +74,43 @@ class RecipeRequest(BaseModel):
     history: str = ""
 
 
+# TEMPORARY GROQ CONNECTION TEST
 @app.get("/health")
 async def health():
-    return {
-        "status": "ok",
-        "api_key_loaded": bool(api_key),
-        "model": MODEL
-    }
+    try:
+        print("Testing Groq API connection...")
+
+        test = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Reply with only the word OK."
+                }
+            ],
+            max_tokens=10
+        )
+
+        print("Groq connection successful!")
+
+        return {
+            "status": "ok",
+            "groq": "connected",
+            "api_key_loaded": bool(api_key),
+            "model": MODEL,
+            "response": test.choices[0].message.content
+        }
+
+    except Exception as e:
+        print("GROQ HEALTH CHECK ERROR:", repr(e))
+
+        return {
+            "status": "error",
+            "groq": "not connected",
+            "api_key_loaded": bool(api_key),
+            "model": MODEL,
+            "error": repr(e)
+        }
 
 
 @app.post("/api/generate")
