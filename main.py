@@ -109,11 +109,12 @@ class RecipeRequest(BaseModel):
 
 
 # =========================================================
-# HOME
+# API HOME
 # =========================================================
 
 @app.get("/api")
 async def api_home():
+
     return {
         "message": "PantryChef AI API is running",
         "model": MODEL
@@ -128,6 +129,7 @@ async def api_home():
 async def health():
 
     if not api_key:
+
         return {
             "status": "error",
             "groq": "not configured",
@@ -136,13 +138,16 @@ async def health():
             "message": "GROQ_API_KEY is not configured."
         }
 
+
     if client is None:
+
         return {
             "status": "error",
             "groq": "client not created",
             "api_key_loaded": True,
             "model": MODEL
         }
+
 
     try:
 
@@ -172,6 +177,7 @@ async def health():
             "response": response_text
         }
 
+
     except Exception as e:
 
         print("GROQ HEALTH CHECK ERROR:", repr(e))
@@ -181,6 +187,54 @@ async def health():
             "groq": "not connected",
             "api_key_loaded": True,
             "model": MODEL,
+            "error_type": type(e).__name__,
+            "error": str(e)
+        }
+
+
+# =========================================================
+# GROQ CONNECTION TEST
+# =========================================================
+
+@app.get("/test-groq")
+async def test_groq():
+
+    try:
+
+        import httpx
+
+        print("Testing connection to Groq API...")
+
+        async with httpx.AsyncClient(timeout=30.0) as http:
+
+            response = await http.get(
+                "https://api.groq.com/openai/v1/models"
+            )
+
+
+        print(
+            "Groq API HTTP status:",
+            response.status_code
+        )
+
+
+        return {
+            "status": "success",
+            "http_status": response.status_code,
+            "message": "Render can reach Groq API"
+        }
+
+
+    except Exception as e:
+
+        print(
+            "GROQ NETWORK ERROR:",
+            repr(e)
+        )
+
+
+        return {
+            "status": "error",
             "error_type": type(e).__name__,
             "error": str(e)
         }
@@ -199,7 +253,9 @@ async def generate_recipe(request: RecipeRequest):
     print("Diet:", request.diet)
     print("====================================")
 
+
     # Check ingredients
+
     if not request.ingredients.strip():
 
         return {
@@ -209,6 +265,7 @@ async def generate_recipe(request: RecipeRequest):
 
 
     # Check API key
+
     if not api_key or client is None:
 
         return {
@@ -217,7 +274,8 @@ async def generate_recipe(request: RecipeRequest):
         }
 
 
-    # Create prompt
+    # Create user prompt
+
     user_prompt = f"""
 Ingredients available:
 {request.ingredients}
@@ -239,6 +297,7 @@ Create 2-3 realistic recipes using the available ingredients.
 
         print("Calling GroqCloud API...")
         print("Using model:", MODEL)
+
 
         completion = client.chat.completions.create(
 
@@ -265,6 +324,7 @@ Create 2-3 realistic recipes using the available ingredients.
 
 
         print("Recipe generated successfully.")
+
 
         return {
             "success": True,
