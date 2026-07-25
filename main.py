@@ -1,11 +1,11 @@
 import os
-from dotenv import load_dotenv
+import httpx
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from groq import Groq
 
 
 # =========================================================
@@ -20,6 +20,8 @@ MODEL = os.getenv(
     "GROQ_MODEL",
     "llama-3.3-70b-versatile"
 )
+
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 
 # =========================================================
@@ -43,20 +45,11 @@ app.add_middleware(
 
 
 # =========================================================
-# GROQ CLIENT
+# CHECK API KEY
 # =========================================================
-
-client = None
 
 if api_key:
     print("Groq API key loaded successfully.")
-
-    client = Groq(
-        api_key=api_key,
-        timeout=60.0,
-        max_retries=2
-    )
-
 else:
     print("WARNING: GROQ_API_KEY is not set!")
 
@@ -109,7 +102,7 @@ class RecipeRequest(BaseModel):
 
 
 # =========================================================
-# API HOME
+# HOME
 # =========================================================
 
 @app.get("/api")
@@ -117,7 +110,8 @@ async def api_home():
 
     return {
         "message": "PantryChef AI API is running",
-        "model": MODEL
+        "model": MODEL,
+        "api_key_loaded": bool(api_key)
     }
 
 
@@ -135,17 +129,7 @@ async def health():
             "groq": "not configured",
             "api_key_loaded": False,
             "model": MODEL,
-            "message": "GROQ_API_KEY is not configured."
-        }
-
-
-    if client is None:
-
-        return {
-            "status": "error",
-            "groq": "client not created",
-            "api_key_loaded": True,
-            "model": MODEL
+            "error": "GROQ_API_KEY is not configured."
         }
 
 
@@ -153,88 +137,86 @@ async def health():
 
         print("Testing Groq API connection...")
 
-        test = client.chat.completions.create(
-            model=MODEL,
-            messages=[
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+
+        data = {
+            "model": MODEL,
+            "messages": [
                 {
                     "role": "user",
                     "content": "Reply with only the word OK."
                 }
             ],
-            temperature=0,
-            max_tokens=10
+            "temperature": 0,
+            "max_tokens": 10
+        }
+
+        async with httpx.AsyncClient(
+            timeout=60.0
+        ) as http:
+
+            response = await http.post(
+                GROQ_API_URL,
+                headers=headers,
+                json=data
+            )
+
+
+        print(
+            "Groq HTTP Status:",
+            response.status_code
         )
 
-        response_text = test.choices[0].message.content
+
+        if response.status_code != 200:
+
+            print(
+                "Groq Error Response:",
+                response.text
+            )
+
+            return {
+                "status": "error",
+                "groq": "not connected",
+                "api_key_loaded": True,
+                "model": MODEL,
+                "http_status": response.status_code,
+                "error": response.text
+            }
+
+
+        result = response.json()
+
+        answer = result["choices"][0]["message"]["content"]
+
 
         print("Groq connection successful!")
+
 
         return {
             "status": "ok",
             "groq": "connected",
             "api_key_loaded": True,
             "model": MODEL,
-            "response": response_text
+            "response": answer
         }
 
 
     except Exception as e:
 
-        print("GROQ HEALTH CHECK ERROR:", repr(e))
+        print(
+            "GROQ HEALTH CHECK ERROR:",
+            repr(e)
+        )
 
         return {
             "status": "error",
             "groq": "not connected",
-            "api_key_loaded": True,
+            "api_key_loaded": bool(api_key),
             "model": MODEL,
-            "error_type": type(e).__name__,
-            "error": str(e)
-        }
-
-
-# =========================================================
-# GROQ CONNECTION TEST
-# =========================================================
-
-@app.get("/test-groq")
-async def test_groq():
-
-    try:
-
-        import httpx
-
-        print("Testing connection to Groq API...")
-
-        async with httpx.AsyncClient(timeout=30.0) as http:
-
-            response = await http.get(
-                "https://api.groq.com/openai/v1/models"
-            )
-
-
-        print(
-            "Groq API HTTP status:",
-            response.status_code
-        )
-
-
-        return {
-            "status": "success",
-            "http_status": response.status_code,
-            "message": "Render can reach Groq API"
-        }
-
-
-    except Exception as e:
-
-        print(
-            "GROQ NETWORK ERROR:",
-            repr(e)
-        )
-
-
-        return {
-            "status": "error",
             "error_type": type(e).__name__,
             "error": str(e)
         }
@@ -245,7 +227,9 @@ async def test_groq():
 # =========================================================
 
 @app.post("/api/generate")
-async def generate_recipe(request: RecipeRequest):
+async def generate_recipe(
+    request: RecipeRequest
+):
 
     print("====================================")
     print("API REQUEST RECEIVED")
@@ -266,7 +250,7 @@ async def generate_recipe(request: RecipeRequest):
 
     # Check API key
 
-    if not api_key or client is None:
+    if not api_key:
 
         return {
             "success": False,
@@ -274,7 +258,7 @@ async def generate_recipe(request: RecipeRequest):
         }
 
 
-    # Create user prompt
+    # User prompt
 
     user_prompt = f"""
 Ingredients available:
@@ -293,58 +277,167 @@ Create 2-3 realistic recipes using the available ingredients.
 """
 
 
+    # Request headers
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+
+    # Request data
+
+    data = {
+
+        "model": MODEL,
+
+        "messages": [
+
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT
+            },
+
+            {
+                "role": "user",
+                "content": user_prompt
+            }
+
+        ],
+
+        "temperature": 0.7,
+
+        "max_tokens": 1500
+    }
+
+
     try:
 
-        print("Calling GroqCloud API...")
-        print("Using model:", MODEL)
+        print("Calling Groq API directly...")
+        print("Model:", MODEL)
 
 
-        completion = client.chat.completions.create(
+        async with httpx.AsyncClient(
+            timeout=60.0
+        ) as http:
 
-            model=MODEL,
+            response = await http.post(
 
-            messages=[
-                {
-                    "role": "system",
-                    "content": SYSTEM_PROMPT
-                },
-                {
-                    "role": "user",
-                    "content": user_prompt
-                }
-            ],
+                GROQ_API_URL,
 
-            temperature=0.7,
+                headers=headers,
 
-            max_tokens=1500
+                json=data
+            )
+
+
+        print(
+            "Groq HTTP Status:",
+            response.status_code
         )
 
 
-        recipe = completion.choices[0].message.content
+        # Check API response
+
+        if response.status_code != 200:
+
+            print(
+                "GROQ API ERROR:",
+                response.text
+            )
 
 
-        print("Recipe generated successfully.")
+            return {
+
+                "success": False,
+
+                "recipe": "Unable to generate recipes.",
+
+                "error": response.text,
+
+                "http_status": response.status_code
+            }
+
+
+        # Convert response to JSON
+
+        result = response.json()
+
+
+        # Get recipe text
+
+        recipe = result["choices"][0]["message"]["content"]
+
+
+        print(
+            "Recipe generated successfully."
+        )
 
 
         return {
+
             "success": True,
+
             "recipe": recipe
+        }
+
+
+    except httpx.TimeoutException as e:
+
+        print(
+            "GROQ TIMEOUT ERROR:",
+            repr(e)
+        )
+
+
+        return {
+
+            "success": False,
+
+            "recipe": "Groq API request timed out. Please try again.",
+
+            "error_type": "TimeoutException",
+
+            "error": str(e)
+        }
+
+
+    except httpx.RequestError as e:
+
+        print(
+            "GROQ CONNECTION ERROR:",
+            repr(e)
+        )
+
+
+        return {
+
+            "success": False,
+
+            "recipe": "Could not connect to Groq API.",
+
+            "error_type": "RequestError",
+
+            "error": str(e)
         }
 
 
     except Exception as e:
 
-        print("====================================")
-        print("GROQ API ERROR")
-        print("ERROR TYPE:", type(e).__name__)
-        print("ERROR:", repr(e))
-        print("====================================")
+        print(
+            "UNEXPECTED ERROR:",
+            repr(e)
+        )
 
 
         return {
+
             "success": False,
-            "recipe": "Unable to connect to Groq AI right now.",
+
+            "recipe": "An unexpected error occurred.",
+
             "error_type": type(e).__name__,
+
             "error": str(e)
         }
 
