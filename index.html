@@ -1,13 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
 <title>PantryChef AI</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Caveat:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link
+  rel="preconnect"
+  href="https://fonts.googleapis.com"
+>
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Caveat:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap"
+  rel="stylesheet"
+>
 
 <style>
 
@@ -24,10 +36,6 @@
 
 * {
   box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
 }
 
 body {
@@ -127,10 +135,6 @@ label {
   padding: 0;
 }
 
-.tag button:hover {
-  opacity: 1;
-}
-
 #ingredientText {
   flex: 1;
   min-width: 160px;
@@ -182,19 +186,11 @@ select {
   font-weight: 600;
   font-size: 1.15rem;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(227,167,47,0.25);
 }
 
 .cta:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 
 #output {
@@ -224,18 +220,8 @@ select {
   margin-top: 28px;
 }
 
-.recipe-card h2:first-child {
-  margin-top: 0;
-}
-
 .recipe-card strong {
   color: var(--teal);
-}
-
-.recipe-card code {
-  background: rgba(110,155,140,0.15);
-  padding: 2px 6px;
-  border-radius: 4px;
 }
 
 .followup {
@@ -262,11 +248,6 @@ select {
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
-}
-
-.cta2:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .empty {
@@ -303,10 +284,6 @@ select {
     padding: 20px;
   }
 
-  .tag-input {
-    min-height: 56px;
-  }
-
   #ingredientText {
     min-width: 120px;
   }
@@ -326,6 +303,7 @@ select {
 }
 
 </style>
+
 </head>
 
 <body>
@@ -334,124 +312,143 @@ select {
 
 <header>
 
-  <div class="eyebrow">
-    no grocery run required
-  </div>
+<div class="eyebrow">
+no grocery run required
+</div>
 
-  <h1>
-    What's in your <span>pantry?</span>
-  </h1>
+<h1>
+What's in your <span>pantry?</span>
+</h1>
 
-  <p class="sub">
-    Type what you've got, tell PantryChef about any dietary needs,
-    and get real recipes you can cook tonight.
-  </p>
+<p class="sub">
+Type what you've got, tell PantryChef about any dietary needs,
+and get real recipes you can cook tonight.
+</p>
 
 </header>
 
 
 <div class="board">
 
-  <label for="ingredientText">
-    Ingredients on hand
-  </label>
 
-  <div class="tag-input" id="tagInput">
-
-    <input
-      id="ingredientText"
-      type="text"
-      autocomplete="off"
-      autocapitalize="off"
-      placeholder="type an ingredient and hit Enter — e.g. eggs, spinach, rice"
-    >
-
-  </div>
+<label for="ingredientText">
+Ingredients on hand
+</label>
 
 
-  <div class="row">
+<div
+  class="tag-input"
+  id="tagInput"
+>
 
-    <div class="field">
-
-      <label for="diet">
-        Dietary preference
-      </label>
-
-      <select id="diet">
-
-        <option value="none">
-          No preference
-        </option>
-
-        <option value="vegetarian">
-          Vegetarian
-        </option>
-
-        <option value="vegan">
-          Vegan
-        </option>
-
-        <option value="gluten-free">
-          Gluten-free
-        </option>
-
-        <option value="dairy-free">
-          Dairy-free
-        </option>
-
-        <option value="low-carb">
-          Low-carb
-        </option>
-
-      </select>
-
-    </div>
-
-  </div>
+<input
+  id="ingredientText"
+  type="text"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  enterkeyhint="done"
+  placeholder="type an ingredient and hit Enter — e.g. eggs, spinach, rice"
+>
 
 
-  <button
-    type="button"
-    class="cta"
-    id="generateBtn"
-  >
-    Find me something to cook
-  </button>
+</div>
 
 
-  <div id="output">
+<div class="row">
 
-    <div
-      class="empty"
-      id="emptyState"
-    >
-      Your recipes will show up here, chalk-fresh ✨
-    </div>
+<div class="field">
 
-  </div>
+<label for="diet">
+Dietary preference
+</label>
+
+<select
+  id="diet"
+  tabindex="-1"
+>
+
+<option value="none">
+No preference
+</option>
+
+<option value="vegetarian">
+Vegetarian
+</option>
+
+<option value="vegan">
+Vegan
+</option>
+
+<option value="gluten-free">
+Gluten-free
+</option>
+
+<option value="dairy-free">
+Dairy-free
+</option>
+
+<option value="low-carb">
+Low-carb
+</option>
+
+</select>
+
+</div>
+
+</div>
 
 
-  <div
-    class="followup"
-    id="followupRow"
-    style="display:none;"
-  >
+<button
+  type="button"
+  class="cta"
+  id="generateBtn"
+>
 
-    <input
-      id="followupInput"
-      type="text"
-      placeholder="tweak it — e.g. 'make it spicier' or 'swap the eggs'"
-    >
+Find me something to cook
 
-    <button
-      type="button"
-      class="cta2"
-      id="followupBtn"
-    >
-      Ask
-    </button>
+</button>
 
-  </div>
+
+<div id="output">
+
+<div
+  class="empty"
+  id="emptyState"
+>
+
+Your recipes will show up here, chalk-fresh ✨
+
+</div>
+
+</div>
+
+
+<div
+  class="followup"
+  id="followupRow"
+  style="display:none;"
+>
+
+<input
+  id="followupInput"
+  type="text"
+  placeholder="tweak it — e.g. 'make it spicier' or 'swap the eggs'"
+>
+
+<button
+  type="button"
+  class="cta2"
+  id="followupBtn"
+>
+
+Ask
+
+</button>
+
+</div>
+
 
 </div>
 
@@ -461,28 +458,28 @@ select {
 <script>
 
 const tagInput =
-  document.getElementById('tagInput');
+document.getElementById("tagInput");
 
 const ingredientText =
-  document.getElementById('ingredientText');
+document.getElementById("ingredientText");
 
 const generateBtn =
-  document.getElementById('generateBtn');
+document.getElementById("generateBtn");
 
 const dietSelect =
-  document.getElementById('diet');
+document.getElementById("diet");
 
 const output =
-  document.getElementById('output');
+document.getElementById("output");
 
 const followupRow =
-  document.getElementById('followupRow');
+document.getElementById("followupRow");
 
 const followupInput =
-  document.getElementById('followupInput');
+document.getElementById("followupInput");
 
 const followupBtn =
-  document.getElementById('followupBtn');
+document.getElementById("followupBtn");
 
 
 let tags = [];
@@ -490,616 +487,741 @@ let tags = [];
 let conversationHistory = "";
 
 
-/* ------------------------------
-   RENDER INGREDIENT TAGS
------------------------------- */
-
-function renderTags() {
-
-  document
-    .querySelectorAll('.tag')
-    .forEach(tag => tag.remove());
-
-  tags.forEach((tag, index) => {
-
-    const element =
-      document.createElement('span');
-
-    element.className = 'tag';
-
-    element.innerHTML = `
-      ${escapeHtml(tag)}
-      <button
-        type="button"
-        data-index="${index}"
-        aria-label="Remove ${escapeHtml(tag)}"
-      >
-        ×
-      </button>
-    `;
-
-    tagInput.insertBefore(
-      element,
-      ingredientText
-    );
-
-  });
-
-}
-
-
-/* ------------------------------
+/* ==============================
    ESCAPE HTML
------------------------------- */
+============================== */
 
 function escapeHtml(text) {
 
-  const div =
-    document.createElement('div');
+const div =
+document.createElement("div");
 
-  div.textContent = text;
+div.textContent = text;
 
-  return div.innerHTML;
-
-}
-
-
-/* ------------------------------
-   KEEP INPUT FOCUSED
------------------------------- */
-
-function keepIngredientInputFocused() {
-
-  setTimeout(function() {
-
-    ingredientText.focus();
-
-  }, 0);
+return div.innerHTML;
 
 }
 
 
-/* ------------------------------
-   TAG INPUT CLICK
------------------------------- */
+/* ==============================
+   RENDER TAGS
+============================== */
 
-tagInput.addEventListener(
-  'click',
-  function(event) {
+function renderTags() {
 
-    if (
-      event.target.tagName === 'BUTTON'
-    ) {
+document
+.querySelectorAll(".tag")
+.forEach(function(tag) {
 
-      const index =
-        parseInt(
-          event.target.dataset.index,
-          10
-        );
+tag.remove();
 
-      if (!isNaN(index)) {
+});
 
-        tags.splice(index, 1);
 
-        renderTags();
+tags.forEach(function(tag, index) {
 
-        keepIngredientInputFocused();
+const element =
+document.createElement("span");
 
-      }
+element.className =
+"tag";
 
-    } else {
 
-      ingredientText.focus();
+element.innerHTML =
 
-    }
+escapeHtml(tag) +
 
-  }
+` <button
+type="button"
+data-index="${index}"
+>×</button>`;
+
+
+tagInput.insertBefore(
+element,
+ingredientText
 );
 
+});
 
-/* ------------------------------
+}
+
+
+/* ==============================
    ADD INGREDIENT
------------------------------- */
+============================== */
+
+function addIngredient() {
+
+const value =
+ingredientText.value.trim();
+
+
+if (!value) {
+
+ingredientText.focus();
+
+return;
+
+}
+
+
+/*
+ Prevent duplicate ingredients
+*/
+
+const exists =
+tags.some(function(item) {
+
+return item.toLowerCase() ===
+value.toLowerCase();
+
+});
+
+
+if (!exists) {
+
+tags.push(value);
+
+}
+
+
+/*
+ Clear input
+*/
+
+ingredientText.value = "";
+
+
+/*
+ Render new tag
+*/
+
+renderTags();
+
+
+/*
+ IMPORTANT:
+
+Keep focus on the ingredient input.
+This prevents mobile browser from
+moving to Dietary Preference.
+*/
+
+setTimeout(function() {
+
+ingredientText.focus();
+
+}, 50);
+
+}
+
+
+/* ==============================
+   INGREDIENT INPUT
+============================== */
+
+
+/*
+ KEYDOWN
+
+Prevent browser default Enter action.
+*/
 
 ingredientText.addEventListener(
-  'keydown',
-  function(event) {
+"keydown",
+function(event) {
 
-    /*
-      IMPORTANT FOR MOBILE
+if (
+event.key === "Enter" ||
+event.keyCode === 13
+) {
 
-      This prevents the mobile blue
-      Enter / Arrow key from moving
-      focus to the Dietary Preference
-      dropdown.
-    */
+event.preventDefault();
 
-    if (event.key === 'Enter') {
+event.stopImmediatePropagation();
 
-      event.preventDefault();
+}
 
-      event.stopPropagation();
-
-      const ingredient =
-        ingredientText.value.trim();
-
-      if (ingredient) {
-
-        /*
-          Avoid duplicate ingredients
-        */
-
-        const alreadyExists =
-          tags.some(function(item) {
-
-            return item.toLowerCase() ===
-              ingredient.toLowerCase();
-
-          });
-
-        if (!alreadyExists) {
-
-          tags.push(ingredient);
-
-        }
-
-        ingredientText.value = "";
-
-        renderTags();
-
-      }
-
-      /*
-        Keep cursor inside ingredient
-        input after pressing mobile
-        blue Enter key.
-      */
-
-      keepIngredientInputFocused();
-
-      return;
-
-    }
-
-
-    /*
-      Remove last tag when Backspace
-      is pressed on an empty input.
-    */
-
-    if (
-      event.key === 'Backspace' &&
-      !ingredientText.value &&
-      tags.length
-    ) {
-
-      event.preventDefault();
-
-      tags.pop();
-
-      renderTags();
-
-      keepIngredientInputFocused();
-
-    }
-
-  }
+}
 );
 
 
-/* ------------------------------
-   SIMPLE MARKDOWN TO HTML
------------------------------- */
+/*
+ KEYPRESS
+
+Prevent browser form navigation.
+*/
+
+ingredientText.addEventListener(
+"keypress",
+function(event) {
+
+if (
+event.key === "Enter" ||
+event.keyCode === 13
+) {
+
+event.preventDefault();
+
+event.stopImmediatePropagation();
+
+}
+
+}
+);
+
+
+/*
+ KEYUP
+
+Actually add the ingredient.
+*/
+
+ingredientText.addEventListener(
+"keyup",
+function(event) {
+
+if (
+event.key === "Enter" ||
+event.keyCode === 13
+) {
+
+event.preventDefault();
+
+event.stopImmediatePropagation();
+
+addIngredient();
+
+}
+
+}
+);
+
+
+/* ==============================
+   BACKSPACE
+============================== */
+
+ingredientText.addEventListener(
+"keydown",
+function(event) {
+
+if (
+event.key === "Backspace" &&
+ingredientText.value === "" &&
+tags.length > 0
+) {
+
+event.preventDefault();
+
+tags.pop();
+
+renderTags();
+
+setTimeout(function() {
+
+ingredientText.focus();
+
+}, 50);
+
+}
+
+}
+);
+
+
+/* ==============================
+   TAG AREA CLICK
+============================== */
+
+tagInput.addEventListener(
+"click",
+function(event) {
+
+if (
+event.target.tagName === "BUTTON"
+) {
+
+const index =
+parseInt(
+event.target.dataset.index,
+10
+);
+
+
+if (!isNaN(index)) {
+
+tags.splice(index, 1);
+
+renderTags();
+
+}
+
+
+setTimeout(function() {
+
+ingredientText.focus();
+
+}, 50);
+
+}
+
+else {
+
+ingredientText.focus();
+
+}
+
+}
+);
+
+
+/* ==============================
+   MARKDOWN CONVERTER
+============================== */
 
 function simpleMarkdownToHtml(markdown) {
 
-  let html =
-    escapeHtml(markdown);
+let html =
+escapeHtml(markdown);
 
 
-  html = html.replace(
-    /^### (.*)$/gim,
-    '<h3>$1</h3>'
-  );
+html =
+html.replace(
+/^### (.*)$/gim,
+"<h3>$1</h3>"
+);
 
 
-  html = html.replace(
-    /^## (.*)$/gim,
-    '<h2>$1</h2>'
-  );
+html =
+html.replace(
+/^## (.*)$/gim,
+"<h2>$1</h2>"
+);
 
 
-  html = html.replace(
-    /^# (.*)$/gim,
-    '<h1>$1</h1>'
-  );
+html =
+html.replace(
+/^# (.*)$/gim,
+"<h1>$1</h1>"
+);
 
 
-  html = html.replace(
-    /\*\*(.*?)\*\*/g,
-    '<strong>$1</strong>'
-  );
+html =
+html.replace(
+/\*\*(.*?)\*\*/g,
+"<strong>$1</strong>"
+);
 
 
-  html = html.replace(
-    /\*(.*?)\*/g,
-    '<em>$1</em>'
-  );
+html =
+html.replace(
+/\*(.*?)\*/g,
+"<em>$1</em>"
+);
 
 
-  html = html.replace(
-    /^\d+\.\s(.*)$/gim,
-    '<li>$1</li>'
-  );
+html =
+html.replace(
+/^\d+\.\s(.*)$/gim,
+"<li>$1</li>"
+);
 
 
-  html = html.replace(
-    /^-\s(.*)$/gim,
-    '<li>$1</li>'
-  );
+html =
+html.replace(
+/^-\s(.*)$/gim,
+"<li>$1</li>"
+);
 
 
-  html = html.replace(
-    /\n/g,
-    '<br>'
-  );
+html =
+html.replace(
+/\n/g,
+"<br>"
+);
 
 
-  return html;
+return html;
 
 }
 
 
-/* ------------------------------
-   CALL BACKEND API
------------------------------- */
+/* ==============================
+   API REQUEST
+============================== */
 
 async function generateRecipe(payload) {
 
-  const response =
-    await fetch(
-      '/api/generate',
-      {
-        method: 'POST',
+const response =
+await fetch(
+"/api/generate",
+{
+method: "POST",
 
-        headers: {
-          'Content-Type':
-            'application/json'
-        },
+headers: {
+"Content-Type":
+"application/json"
+},
 
-        body:
-          JSON.stringify(payload)
-      }
-    );
+body:
+JSON.stringify(payload)
 
-
-  if (!response.ok) {
-
-    throw new Error(
-      `Server error: ${response.status}`
-    );
-
-  }
+}
+);
 
 
-  const data =
-    await response.json();
+if (!response.ok) {
 
-
-  if (!data.success) {
-
-    throw new Error(
-      data.recipe ||
-      'Unable to generate recipe'
-    );
-
-  }
-
-
-  return data.recipe;
+throw new Error(
+"Server error: " +
+response.status
+);
 
 }
 
 
-/* ------------------------------
-   HIDE MOBILE KEYBOARD
------------------------------- */
+const data =
+await response.json();
 
-function hideMobileKeyboard() {
 
-  /*
-    Remove focus from the ingredient
-    input so the mobile keyboard closes.
-  */
+if (!data.success) {
 
-  ingredientText.blur();
-
-  followupInput.blur();
+throw new Error(
+data.recipe ||
+"Unable to generate recipe"
+);
 
 }
 
 
-/* ------------------------------
-   GENERATE BUTTON
------------------------------- */
+return data.recipe;
+
+}
+
+
+/* ==============================
+   GENERATE RECIPE
+============================== */
 
 async function handleGenerate() {
 
-  /*
-    Hide mobile keyboard immediately
-    when the user taps the button.
-  */
 
-  hideMobileKeyboard();
+/*
+ Remove focus from ingredient input.
 
+This closes mobile keyboard.
+*/
 
-  /*
-    Check whether ingredients exist.
-  */
-
-  if (!tags.length) {
-
-    ingredientText.placeholder =
-      "Add at least one ingredient first";
-
-    return;
-
-  }
+ingredientText.blur();
 
 
-  generateBtn.disabled = true;
+if (!tags.length) {
 
-  generateBtn.textContent =
-    "Cooking something up...";
+output.innerHTML = `
 
+<div class="error">
 
-  followupRow.style.display =
-    "none";
+Please add at least one ingredient.
 
+</div>
 
-  output.innerHTML = `
-    <div class="loading">
-      🍳 PantryChef is cooking up some ideas...
-    </div>
-  `;
+`;
 
-
-  const payload = {
-
-    ingredients:
-      tags.join(', '),
-
-    diet:
-      dietSelect.value,
-
-    followup:
-      "",
-
-    history:
-      ""
-
-  };
-
-
-  try {
-
-    const recipe =
-      await generateRecipe(payload);
-
-
-    output.innerHTML = `
-      <div class="recipe-card" id="card">
-        ${simpleMarkdownToHtml(recipe)}
-      </div>
-    `;
-
-
-    conversationHistory =
-      `Ingredients: ${tags.join(', ')}
-Assistant: ${recipe}`;
-
-
-    followupRow.style.display =
-      "flex";
-
-
-    /*
-      Scroll to recipe result
-      after generation.
-    */
-
-    setTimeout(function() {
-
-      output.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-
-    }, 100);
-
-  }
-
-  catch (error) {
-
-    console.error(
-      "Recipe generation error:",
-      error
-    );
-
-
-    output.innerHTML = `
-      <div class="error">
-
-        <h2>
-          Something went wrong
-        </h2>
-
-        <p>
-          ${escapeHtml(error.message)}
-        </p>
-
-        <p>
-          Please check your API key and
-          try again.
-        </p>
-
-      </div>
-    `;
-
-  }
-
-
-  generateBtn.disabled =
-    false;
-
-  generateBtn.textContent =
-    "Find me something to cook";
+return;
 
 }
 
 
-/* ------------------------------
-   FOLLOW-UP REQUEST
------------------------------- */
+generateBtn.disabled =
+true;
+
+
+generateBtn.textContent =
+"Cooking something up...";
+
+
+followupRow.style.display =
+"none";
+
+
+output.innerHTML = `
+
+<div class="loading">
+
+🍳 PantryChef is cooking up some ideas...
+
+</div>
+
+`;
+
+
+const payload = {
+
+ingredients:
+tags.join(", "),
+
+diet:
+dietSelect.value,
+
+followup:
+"",
+
+history:
+""
+
+};
+
+
+try {
+
+
+const recipe =
+await generateRecipe(payload);
+
+
+output.innerHTML = `
+
+<div
+class="recipe-card"
+id="card"
+>
+
+${simpleMarkdownToHtml(recipe)}
+
+</div>
+
+`;
+
+
+conversationHistory =
+
+"Ingredients: " +
+tags.join(", ") +
+
+"\nAssistant: " +
+recipe;
+
+
+followupRow.style.display =
+"flex";
+
+
+setTimeout(function() {
+
+output.scrollIntoView({
+behavior: "smooth",
+block: "start"
+});
+
+}, 100);
+
+
+}
+
+catch(error) {
+
+
+console.error(
+"Recipe generation error:",
+error
+);
+
+
+output.innerHTML = `
+
+<div class="error">
+
+<h2>
+Something went wrong
+</h2>
+
+<p>
+${escapeHtml(error.message)}
+</p>
+
+<p>
+Please try again.
+</p>
+
+</div>
+
+`;
+
+}
+
+
+generateBtn.disabled =
+false;
+
+
+generateBtn.textContent =
+"Find me something to cook";
+
+}
+
+
+/* ==============================
+   FOLLOW-UP
+============================== */
 
 async function handleFollowup() {
 
-  const question =
-    followupInput.value.trim();
+const question =
+followupInput.value.trim();
 
 
-  if (!question) {
+if (!question) {
 
-    return;
-
-  }
-
-
-  followupBtn.disabled =
-    true;
-
-
-  followupBtn.textContent =
-    "Asking...";
-
-
-  const card =
-    document.getElementById('card');
-
-
-  if (!card) {
-
-    followupBtn.disabled =
-      false;
-
-    followupBtn.textContent =
-      "Ask";
-
-    return;
-
-  }
-
-
-  const payload = {
-
-    ingredients:
-      tags.join(', '),
-
-    diet:
-      dietSelect.value,
-
-    followup:
-      question,
-
-    history:
-      conversationHistory
-
-  };
-
-
-  try {
-
-    const answer =
-      await generateRecipe(payload);
-
-
-    card.innerHTML += `
-      <hr
-        style="
-          margin: 24px 0;
-          border: none;
-          border-top:
-            1px solid
-            rgba(36,49,43,0.15);
-        "
-      >
-    `;
-
-
-    card.innerHTML +=
-      simpleMarkdownToHtml(answer);
-
-
-    conversationHistory +=
-      `\nUser: ${question}
-Assistant: ${answer}`;
-
-
-    followupInput.value = "";
-
-  }
-
-  catch (error) {
-
-    card.innerHTML += `
-      <div class="error">
-        ${escapeHtml(error.message)}
-      </div>
-    `;
-
-  }
-
-
-  followupBtn.disabled =
-    false;
-
-  followupBtn.textContent =
-    "Ask";
+return;
 
 }
 
 
-/* ------------------------------
-   EVENT LISTENERS
------------------------------- */
+const card =
+document.getElementById("card");
+
+
+if (!card) {
+
+return;
+
+}
+
+
+followupBtn.disabled =
+true;
+
+
+followupBtn.textContent =
+"Asking...";
+
+
+const payload = {
+
+ingredients:
+tags.join(", "),
+
+diet:
+dietSelect.value,
+
+followup:
+question,
+
+history:
+conversationHistory
+
+};
+
+
+try {
+
+
+const answer =
+await generateRecipe(payload);
+
+
+card.innerHTML += `
+
+<hr
+style="
+margin:24px 0;
+border:none;
+border-top:
+1px solid
+rgba(36,49,43,0.15);
+"
+>
+
+`;
+
+
+card.innerHTML +=
+simpleMarkdownToHtml(answer);
+
+
+conversationHistory +=
+
+"\nUser: " +
+question +
+
+"\nAssistant: " +
+answer;
+
+
+followupInput.value = "";
+
+
+}
+
+catch(error) {
+
+
+card.innerHTML += `
+
+<div class="error">
+
+${escapeHtml(error.message)}
+
+</div>
+
+`;
+
+}
+
+
+followupBtn.disabled =
+false;
+
+
+followupBtn.textContent =
+"Ask";
+
+}
+
+
+/* ==============================
+   BUTTON EVENTS
+============================== */
 
 generateBtn.addEventListener(
-  'click',
-  handleGenerate
+"click",
+function(event) {
+
+event.preventDefault();
+
+handleGenerate();
+
+}
 );
 
 
 followupBtn.addEventListener(
-  'click',
-  handleFollowup
+"click",
+function(event) {
+
+event.preventDefault();
+
+handleFollowup();
+
+}
 );
 
 
 followupInput.addEventListener(
-  'keydown',
-  function(event) {
+"keydown",
+function(event) {
 
-    if (event.key === 'Enter') {
+if (event.key === "Enter") {
 
-      event.preventDefault();
+event.preventDefault();
 
-      event.stopPropagation();
+handleFollowup();
 
-      handleFollowup();
+}
 
-    }
-
-  }
+}
 );
 
 </script>
