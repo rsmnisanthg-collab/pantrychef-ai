@@ -184,7 +184,6 @@ select {
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
 }
 
 .cta:hover {
@@ -209,6 +208,7 @@ select {
   padding: 32px;
   line-height: 1.65;
   font-size: 1rem;
+  overflow-wrap: break-word;
 }
 
 .recipe-card h1,
@@ -262,7 +262,6 @@ select {
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
-  touch-action: manipulation;
 }
 
 .cta2:disabled {
@@ -304,6 +303,14 @@ select {
     padding: 20px;
   }
 
+  .tag-input {
+    min-height: 56px;
+  }
+
+  #ingredientText {
+    min-width: 120px;
+  }
+
   .followup {
     flex-direction: column;
   }
@@ -312,12 +319,8 @@ select {
     width: 100%;
   }
 
-  .cta {
-    min-height: 54px;
-  }
-
-  #ingredientText {
-    min-width: 120px;
+  .recipe-card {
+    padding: 22px;
   }
 
 }
@@ -359,7 +362,7 @@ select {
       id="ingredientText"
       type="text"
       autocomplete="off"
-      autocapitalize="words"
+      autocapitalize="off"
       placeholder="type an ingredient and hit Enter — e.g. eggs, spinach, rice"
     >
 
@@ -408,9 +411,9 @@ select {
 
 
   <button
+    type="button"
     class="cta"
     id="generateBtn"
-    type="button"
   >
     Find me something to cook
   </button>
@@ -437,14 +440,13 @@ select {
     <input
       id="followupInput"
       type="text"
-      autocomplete="off"
       placeholder="tweak it — e.g. 'make it spicier' or 'swap the eggs'"
     >
 
     <button
+      type="button"
       class="cta2"
       id="followupBtn"
-      type="button"
     >
       Ask
     </button>
@@ -543,6 +545,21 @@ function escapeHtml(text) {
 
 
 /* ------------------------------
+   KEEP INPUT FOCUSED
+------------------------------ */
+
+function keepIngredientInputFocused() {
+
+  setTimeout(function() {
+
+    ingredientText.focus();
+
+  }, 0);
+
+}
+
+
+/* ------------------------------
    TAG INPUT CLICK
 ------------------------------ */
 
@@ -556,16 +573,19 @@ tagInput.addEventListener(
 
       const index =
         parseInt(
-          event.target.dataset.index
+          event.target.dataset.index,
+          10
         );
 
-      tags.splice(index, 1);
+      if (!isNaN(index)) {
 
-      renderTags();
+        tags.splice(index, 1);
 
-      setTimeout(() => {
-        ingredientText.focus();
-      }, 50);
+        renderTags();
+
+        keepIngredientInputFocused();
+
+      }
 
     } else {
 
@@ -585,46 +605,81 @@ ingredientText.addEventListener(
   'keydown',
   function(event) {
 
-    if (
-      event.key === 'Enter' &&
-      ingredientText.value.trim()
-    ) {
+    /*
+      IMPORTANT FOR MOBILE
+
+      This prevents the mobile blue
+      Enter / Arrow key from moving
+      focus to the Dietary Preference
+      dropdown.
+    */
+
+    if (event.key === 'Enter') {
 
       event.preventDefault();
+
+      event.stopPropagation();
 
       const ingredient =
         ingredientText.value.trim();
 
-      tags.push(ingredient);
+      if (ingredient) {
 
-      ingredientText.value = "";
+        /*
+          Avoid duplicate ingredients
+        */
 
-      renderTags();
+        const alreadyExists =
+          tags.some(function(item) {
+
+            return item.toLowerCase() ===
+              ingredient.toLowerCase();
+
+          });
+
+        if (!alreadyExists) {
+
+          tags.push(ingredient);
+
+        }
+
+        ingredientText.value = "";
+
+        renderTags();
+
+      }
 
       /*
-        Keep the input ready for the next ingredient.
-        On mobile, the user can continue typing.
+        Keep cursor inside ingredient
+        input after pressing mobile
+        blue Enter key.
       */
 
-      setTimeout(() => {
-        ingredientText.focus();
-      }, 50);
+      keepIngredientInputFocused();
+
+      return;
 
     }
 
-    else if (
+
+    /*
+      Remove last tag when Backspace
+      is pressed on an empty input.
+    */
+
+    if (
       event.key === 'Backspace' &&
       !ingredientText.value &&
       tags.length
     ) {
 
+      event.preventDefault();
+
       tags.pop();
 
       renderTags();
 
-      setTimeout(() => {
-        ingredientText.focus();
-      }, 50);
+      keepIngredientInputFocused();
 
     }
 
@@ -747,47 +802,45 @@ async function generateRecipe(payload) {
 
 
 /* ------------------------------
-   GENERATE BUTTON
+   HIDE MOBILE KEYBOARD
 ------------------------------ */
 
-async function handleGenerate(event) {
+function hideMobileKeyboard() {
 
   /*
-    IMPORTANT FOR MOBILE:
-
-    Remove focus from the ingredient input
-    before starting the API request.
-
-    This prevents the mobile browser from
-    automatically scrolling back to the
-    ingredient input.
+    Remove focus from the ingredient
+    input so the mobile keyboard closes.
   */
-
-  if (event) {
-    event.preventDefault();
-  }
 
   ingredientText.blur();
 
-  generateBtn.blur();
+  followupInput.blur();
+
+}
+
+
+/* ------------------------------
+   GENERATE BUTTON
+------------------------------ */
+
+async function handleGenerate() {
 
   /*
-    Check ingredients.
+    Hide mobile keyboard immediately
+    when the user taps the button.
+  */
+
+  hideMobileKeyboard();
+
+
+  /*
+    Check whether ingredients exist.
   */
 
   if (!tags.length) {
 
     ingredientText.placeholder =
       "Add at least one ingredient first";
-
-    /*
-      Only focus the ingredient input
-      when there are no ingredients.
-    */
-
-    setTimeout(() => {
-      ingredientText.focus();
-    }, 100);
 
     return;
 
@@ -809,22 +862,6 @@ async function handleGenerate(event) {
       🍳 PantryChef is cooking up some ideas...
     </div>
   `;
-
-
-  /*
-    Scroll to the result area.
-
-    This is especially useful on mobile.
-  */
-
-  setTimeout(() => {
-
-    output.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
-
-  }, 100);
 
 
   const payload = {
@@ -867,18 +904,18 @@ Assistant: ${recipe}`;
 
 
     /*
-      Keep the result visible on mobile.
+      Scroll to recipe result
+      after generation.
     */
 
-    setTimeout(() => {
+    setTimeout(function() {
 
       output.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+        behavior: 'smooth',
+        block: 'start'
       });
 
     }, 100);
-
 
   }
 
@@ -902,21 +939,12 @@ Assistant: ${recipe}`;
         </p>
 
         <p>
-          Please try again.
+          Please check your API key and
+          try again.
         </p>
 
       </div>
     `;
-
-
-    setTimeout(() => {
-
-      output.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-
-    }, 100);
 
   }
 
@@ -1019,16 +1047,6 @@ Assistant: ${answer}`;
 
     followupInput.value = "";
 
-
-    setTimeout(() => {
-
-      card.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-
-    }, 100);
-
   }
 
   catch (error) {
@@ -1074,6 +1092,8 @@ followupInput.addEventListener(
     if (event.key === 'Enter') {
 
       event.preventDefault();
+
+      event.stopPropagation();
 
       handleFollowup();
 
